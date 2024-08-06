@@ -23,6 +23,23 @@ const PlaceOrder = () => {
 
   const dispatch = useDispatch();
 
+  // const placeOrderHandler = async () => {
+  //   try {
+  //     const res = await createOrder({
+  //       orderItems: cart.cartItems,
+  //       shippingAddress: cart.shippingAddress,
+  //       paymentMethod: cart.paymentMethod,
+  //       itemsPrice: cart.itemsPrice,
+  //       shippingPrice: cart.shippingPrice,
+  //       taxPrice: cart.taxPrice,
+  //       totalPrice: cart.totalPrice,
+  //     }).unwrap();
+  //     dispatch(clearCartItems());
+  //     navigate(`/order/${res._id}`);
+  //   } catch (error) {
+  //     toast.error(error);
+  //   }
+  // };
   const placeOrderHandler = async () => {
     try {
       const res = await createOrder({
@@ -37,7 +54,8 @@ const PlaceOrder = () => {
       dispatch(clearCartItems());
       navigate(`/order/${res._id}`);
     } catch (error) {
-      toast.error(error);
+      console.error("Error placing order:", error);
+      toast.error(error.message || "An error occurred");
     }
   };
 

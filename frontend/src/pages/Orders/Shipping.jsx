@@ -12,7 +12,7 @@ const Shipping = () => {
   const cart = useSelector((state) => state.cart);
   const { shippingAddress } = cart;
 
-  const [paymentMethod, setPaymentMethod] = useState("PayPal");
+  const [paymentMethod, setPaymentMethod] = useState("RazorPay");
   const [address, setAddress] = useState(shippingAddress.address || "");
   const [city, setCity] = useState(shippingAddress.city || "");
   const [postalCode, setPostalCode] = useState(
@@ -96,12 +96,12 @@ const Shipping = () => {
                   type="radio"
                   className="form-radio text-pink-500"
                   name="paymentMethod"
-                  value="PayPal"
-                  checked={paymentMethod === "PayPal"}
+                  value="RazorPay"
+                  checked={paymentMethod === "RazorPay"}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
 
-                <span className="ml-2">PayPal or Credit Card</span>
+                <span className="ml-2">RazorPay or Credit Card</span>
               </label>
             </div>
           </div>

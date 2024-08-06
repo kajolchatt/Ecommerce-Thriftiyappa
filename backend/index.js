@@ -8,6 +8,7 @@ const categoryRoutes = require("./routes/categoryRoutes.js");
 const productRoutes = require("./routes/productRoutes.js");
 const uploadRoutes = require("./routes/uploadRoutes.js");
 const orderRoutes = require("./routes/orderRoutes.js");
+const paymentRoutes = require("./routes/paymentRoutes.js");
 //utils
 const connectDB = require("./config/db.js");
 dotenv.config();
@@ -25,11 +26,11 @@ app.use("/api/products", productRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/orders", orderRoutes);
 
-console.log(process.env.PAYPAL_CLIENT_ID)
-app.get('/api/config/paypal',(req,res)=>{
-    res.send({clientId:process.env.PAYPAL_CLIENT_ID})
-})
-// const __dirname = path.resolve();
+// console.log(process.env.PAYPAL_CLIENT_ID)
+// app.get('/api/config/paypal',(req,res)=>{
+//     res.send({clientId:process.env.PAYPAL_CLIENT_ID})
+// })
+app.use("/api/payment", paymentRoutes);
 console.log(__dirname);
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 console.log(__dirname);

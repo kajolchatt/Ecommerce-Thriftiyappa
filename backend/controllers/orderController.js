@@ -1,5 +1,6 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
+const mongoose = require("mongoose");
 //utility function
 function calcPrices(orderItems) {
   const itemsPrice = orderItems.reduce(
@@ -22,6 +23,57 @@ function calcPrices(orderItems) {
     totalPrice,
   };
 }
+// const createOrder = async (req, res) => {
+//   try {
+//     const { orderItems, shippingAddress, paymentMethod } = req.body;
+
+//     if (orderItems && orderItems.length === 0) {
+//       res.status(400);
+//       throw new Error("No order items");
+//     }
+
+//     const itemsFromDB = await Product.find({
+//       _id: { $in: orderItems.map((x) => x._id) },
+//     });
+
+//     const dbOrderItems = orderItems.map((itemFromClient) => {
+//       const matchingItemFromDB = itemsFromDB.find(
+//         (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
+//       );
+
+//       if (!matchingItemFromDB) {
+//         res.status(404);
+//         throw new Error(`Product not found: ${itemFromClient._id}`);
+//       }
+
+//       return {
+//         ...itemFromClient,
+//         product: itemFromClient._id,
+//         price: matchingItemFromDB.price,
+//         _id: undefined,
+//       };
+//     });
+
+//     const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+//       calcPrices(dbOrderItems);
+
+//     const order = new Order({
+//       orderItems: dbOrderItems,
+//       user: req.user._id,
+//       shippingAddress,
+//       paymentMethod,
+//       itemsPrice,
+//       taxPrice,
+//       shippingPrice,
+//       totalPrice,
+//     });
+
+//     const createdOrder = await order.save();
+//     res.status(201).json(createdOrder);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 const createOrder = async (req, res) => {
   try {
     const { orderItems, shippingAddress, paymentMethod } = req.body;
@@ -65,6 +117,7 @@ const createOrder = async (req, res) => {
       taxPrice,
       shippingPrice,
       totalPrice,
+      orderId: new mongoose.Types.ObjectId().toString(), // Ensure unique orderId
     });
 
     const createdOrder = await order.save();
@@ -150,30 +203,30 @@ const findOrderById = async (req, res) => {
   }
 };
 
-const markOrderAsPaid = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
+// const markOrderAsPaid = async (req, res) => {
+//   try {
+//     const order = await Order.findById(req.params.id);
+//     console.log(order);
+//     if (order) {
+//       order.isPaid = true;
+//       order.paidAt = Date.now();
+//       order.paymentResult = {
+//         id: req.body.id,
+//         status: req.body.status,
+//         update_time: req.body.update_time,
+//         email_address: req.body.payer.email_address,
+//       };
 
-    if (order) {
-      order.isPaid = true;
-      order.paidAt = Date.now();
-      order.paymentResult = {
-        id: req.body.id,
-        status: req.body.status,
-        update_time: req.body.update_time,
-        email_address: req.body.payer.email_address,
-      };
-
-      const updateOrder = await order.save();
-      res.status(200).json(updateOrder);
-    } else {
-      res.status(404);
-      throw new Error("Order not found");
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+//       const updateOrder = await order.save();
+//       res.status(200).json(updateOrder);
+//     } else {
+//       res.status(404);
+//       throw new Error("Order not found");
+//     }
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 const markOrderAsDelivered = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -192,6 +245,77 @@ const markOrderAsDelivered = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// const markOrderAsPaid = async (req, res) => {
+//   try {
+//     console.log("Request body:", req.body);
+//     console.log("Order ID:", req.params.id);
+//     console.log("email", req.body.payer.email_address);
+//     const order = await Order.findById(req.params.id);
+
+//     if (!order) {
+//       console.log("Order not found");
+//       return res.status(404).json({ error: "Order not found" });
+//     }
+
+//     order.isPaid = true;
+//     order.paidAt = Date.now();
+//     order.paymentResult = {
+//       id: req.body.id,
+//       status: req.body.status,
+//       update_time: req.body.update_time,
+//       email_address: req.body.payer.email_address,
+//     };
+
+//     const updatedOrder = await order.save();
+//     console.log("Order updated:", updatedOrder);
+//     res.status(200).json(updatedOrder);
+//   } catch (error) {
+//     console.error("Error in markOrderAsPaid:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+const markOrderAsPaid = async (req, res) => {
+  try {
+    console.log("Request body:", req.body);
+    console.log("Order ID:", req.params.id);
+    console.log("email", req.body.payer.email_address);
+
+    // Ensure the ID format matches your schema
+    const orderId = req.params.id;
+    console.log(typeof orderId);
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ message: "Invalid Order ID" });
+    }
+
+    // Cast the string orderId to ObjectId
+    const orderObjectId = new mongoose.Types.ObjectId(orderId);
+
+    // Adjust the query based on your ID format
+    const order = await Order.findById(orderObjectId); // Assuming 'orderId' is the field
+
+    if (!order) {
+      console.log("Order not found");
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    order.isPaid = true;
+    order.paidAt = Date.now();
+    order.paymentResult = {
+      id: req.body.razorpayPaymentId, // Updated to use razorpayPaymentId
+      status: "paid", // Assuming payment status is 'paid'
+      update_time: Date.now(), // Use current time or appropriate value
+      email_address: req.body.payer.email_address,
+    };
+
+    const updatedOrder = await order.save();
+    console.log("Order updated:", updatedOrder);
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    console.error("Error in markOrderAsPaid:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createOrder,
   getAllOrders,

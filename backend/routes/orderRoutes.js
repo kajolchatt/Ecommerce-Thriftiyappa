@@ -4,7 +4,10 @@ const {
   authenticate,
   authorizeAdmin,
 } = require("../middlewares/authMiddleware");
-
+const {
+  updateOrderToPaid,
+  // other routes
+} = require("../controllers/orderController");
 const {
   createOrder,
   getAllOrders,
@@ -14,7 +17,7 @@ const {
   calcualteTotalSalesByDate,
   findOrderById,
   markOrderAsPaid,
-  markOrderAsDelivered
+  markOrderAsDelivered,
 } = require("../controllers/orderController");
 
 router
@@ -29,5 +32,8 @@ router.route("/total-sales").get(calculateTotalSales);
 router.route("/total-sales-by-date").get(calcualteTotalSalesByDate);
 router.route("/:id").get(authenticate, findOrderById);
 router.route("/:id/pay").put(authenticate, markOrderAsPaid);
-router.route('/:id/deliver').put(authenticate,authorizeAdmin,markOrderAsDelivered)
+router
+  .route("/:id/deliver")
+  .put(authenticate, authorizeAdmin, markOrderAsDelivered);
+
 module.exports = router;
